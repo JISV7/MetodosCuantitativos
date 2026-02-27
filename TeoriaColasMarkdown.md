@@ -9,6 +9,20 @@ Factor de Utilización (ρ)
 Tiempo esperado entre llegadas (1 / λ)
 Tiempo esperado de servicio (1 / μ)
 
+## Índices
+Probability (P): Probabilidad de que el sistema esté en un estado específico.
+Length(L): Longitud o número esperado de clientes (cantidad de personas).
+Wait (W): Tiempo esperado de espera (minutos, horas, etc.).
+
+## Subíndices
+Subíndices (¿Dónde lo medimos?)
+s (System): En el sistema completo (Haciendo fila + Siendo atendidos).
+q (Queue): En la cola o fila (Esperando ser atendidos).
+0 (Zero): Estado vacío (Cero clientes en el sistema).
+n (Number): Estado con exactamente n clientes.
+w (Waiting/Wait): Probabilidad de esperar (cuando el sistema está lleno).
+b (Busy): Periodo ocupado. Aquellos que encontraron el sistema lleno y tuvieron que esperar.
+
 ## Formas de evitar una cola:
 λ < s * μ
 
