@@ -39,6 +39,8 @@ L_q = λ^2 / (2μ * (μ - λ))
 - Número esperado de clientes en el sistema (L_s):
 L_s = L_q + ρ
 
+L_s =  λ / (μ - λ)
+
 - Tiempo esperado de espera en la cola (W_q):
 W_q = L_q / λ
 

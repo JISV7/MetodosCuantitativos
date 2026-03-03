@@ -78,7 +78,8 @@ L_s = L_q + (λ / μ)
 
 L_s = Σ_{n=0}^{∞} n * P_n
 
-L_s = λ * W_s
+L_s =  λ / (μ - λ)
+<!-- Solo para M/M/1 -->
 
 - Número promedio de clientes en la cola "Ocupada" (L_b):
 
@@ -88,9 +89,14 @@ L_b = L_q / P_w
 
 W_s = W_q + (1 / μ)
 
+W_s = L_s / λ 
+
 - Tiempo esperado de espera en la cola (W_q):
 
 W_q = L_q / λ
+
+W_q = λ / (μ * (μ - λ))
+<!-- Solo para M/M/1 -->
 
 - Tiempo esperado de espera para los que esperan (W_b):
 
