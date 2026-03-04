@@ -27,7 +27,7 @@ b (Busy): Periodo ocupado. Aquellos que encontraron el sistema lleno y tuvieron 
 
 P_0 = 1 - ρ
 
-- - Probabilidad de que haya n clientes en el sistema (P_n):
+- Probabilidad de que haya n clientes en el sistema (P_n):
 
 P_n = P^n * P_0
 

@@ -35,7 +35,7 @@ u = λ / μ
 ## Medidas del desempeño del sistema de colas
 - Probabilidad de que el sistema esté vacío (P_0):
 
-P_0 = 1 / (Σ_{n=0}^{s-1} ((λ / μ)^n / n!) + ((λ / μ)^s / s!) * ((s * μ) / (s * μ - λ)))
+P_0 = 1 / ((Σ_{n=0}^{s-1} ((λ / μ)^n / n!)) + ((λ / μ)^s / s!) * ((s * μ) / (s * μ - λ)))
 
 - Probabilidad de que haya n clientes en el sistema (P_n):
 
