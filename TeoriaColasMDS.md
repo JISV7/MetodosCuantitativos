@@ -37,7 +37,7 @@ P_0 = 1 / ((Σ_{n=0}^{s-1} ((λ / μ)^n / n!)) + ((λ / μ)^s / s!) * ((s * μ) 
 P_w = ( (s * ρ)^s / ( s! * (1 - ρ) ) ) * P_0
 
 - Número esperado de clientes en la cola (L_q):
-L_q = ( (s * ρ)^s * ρ ) / ( s! * s * (1 - ρ)^2 ) * P_0 * (1/2)
+L_q = ( (s * ρ)^s * ρ ) / ( s! * (1 - ρ)^2 ) * P_0 * (1/2)
 
 - Número esperado de clientes en el sistema (L_s):
 L_s = L_q + λ / μ
