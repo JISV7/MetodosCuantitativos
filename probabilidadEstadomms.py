@@ -61,13 +61,13 @@ class MMSCola:
         s = self.s
 
         # Sumatoria para n = 0 hasta s-1
-        sum1 = sum((rho ** n) / self._factorial(n) for n in range(s))
+        sum1 = sum((rho**n) / self._factorial(n) for n in range(s))
 
         # Término para n >= s
         if self.utilizacion >= 1:
             return 0.0  # Sistema inestable, pero ya validado en __init__
 
-        sum2 = (rho ** s) / (self._factorial(s) * (1 - self.utilizacion))
+        sum2 = (rho**s) / (self._factorial(s) * (1 - self.utilizacion))
 
         return 1 / (sum1 + sum2)
 
@@ -76,8 +76,11 @@ class MMSCola:
         Calcula la probabilidad de que todos los servidores estén ocupados (P(N ≥ s)).
         También conocida como fórmula C de Erlang.
         """
-        return (self.p_0 * (self.intensidad ** self.s) /
-                (self._factorial(self.s) * (1 - self.utilizacion)))
+        return (
+            self.p_0
+            * (self.intensidad**self.s)
+            / (self._factorial(self.s) * (1 - self.utilizacion))
+        )
 
     def p0(self):
         """Retorna la probabilidad de que el sistema esté vacío (P0)."""
@@ -100,9 +103,9 @@ class MMSCola:
         s = self.s
 
         if n < s:
-            return (rho ** n / self._factorial(n)) * self.p_0
+            return (rho**n / self._factorial(n)) * self.p_0
         else:
-            return (rho ** n / (self._factorial(s) * (s ** (n - s)))) * self.p_0
+            return (rho**n / (self._factorial(s) * (s ** (n - s)))) * self.p_0
 
     def p_cola_mayor_n(self, n):
         """
@@ -178,7 +181,9 @@ def presentar_resultados(cola: MMSCola, n_max=100):
     print(f"Intensidad de tráfico (u = λ/μ): {cola.intensidad:.4f}")
     print(f"Utilización del sistema (ρ = λ/(s*μ)): {cola.utilizacion:.4f}")
     print(f"Probabilidad de sistema vacío (P0): {cola.p0():.4f}")
-    print(f"Probabilidad de que todos los servidores estén ocupados (P(N≥s)): {cola.p_ocupados:.4f}")
+    print(
+        f"Probabilidad de que todos los servidores estén ocupados (P(N≥s)): {cola.p_ocupados:.4f}"
+    )
     print(f"\nProbabilidades P(n) para n = 0 hasta {n_max}:")
     print("-" * 30)
     for n in range(n_max + 1):
@@ -194,7 +199,9 @@ if __name__ == "__main__":
         s = int(input("Ingrese el número de servidores (s): "))
         # rango máximo de estados a mostrar (por defecto 100)
         try:
-            n_max = int(input("Ingrese el máximo n para mostrar P(n) [enter=100]: ") or 100)
+            n_max = int(
+                input("Ingrese el máximo n para mostrar P(n) [enter=100]: ") or 100
+            )
         except ValueError:
             n_max = 100
 

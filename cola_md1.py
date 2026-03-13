@@ -1,5 +1,7 @@
 class MD1Queue:
-    def __init__(self, llegadas_totales, tiempo_observacion, atendidos_totales, tiempo_servicio):
+    def __init__(
+        self, llegadas_totales, tiempo_observacion, atendidos_totales, tiempo_servicio
+    ):
         # Validación de entrada: verificar que todos los inputs sean > 0
         if llegadas_totales <= 0:
             raise ValueError("llegadas_totales debe ser mayor que 0.")
@@ -23,15 +25,21 @@ class MD1Queue:
 
         # Verificar si el sistema es estable (ρ < 1)
         if self.utilizacion >= 1:
-            raise ValueError("El sistema no es estable (ρ ≥ 1). La tasa de llegada debe ser menor que la tasa de servicio.")
+            raise ValueError(
+                "El sistema no es estable (ρ ≥ 1). La tasa de llegada debe ser menor que la tasa de servicio."
+            )
 
         # Validación para evitar ZeroDivisionError en cálculos posteriores
         if self.tasa_servicio - self.tasa_llegada <= 0:
-            raise ValueError("La diferencia (μ - λ) debe ser mayor que 0 para evitar división por cero.")
+            raise ValueError(
+                "La diferencia (μ - λ) debe ser mayor que 0 para evitar división por cero."
+            )
 
     def clientes_promedio_cola(self):
         """Número promedio de clientes en la cola (Lq)."""
-        return (self.tasa_llegada ** 2) / (2 * self.tasa_servicio * (self.tasa_servicio - self.tasa_llegada))
+        return (self.tasa_llegada**2) / (
+            2 * self.tasa_servicio * (self.tasa_servicio - self.tasa_llegada)
+        )
 
     def clientes_promedio_sistema(self):
         """Número promedio de clientes en el sistema (L)."""
@@ -49,25 +57,43 @@ class MD1Queue:
 def presentar_resultados(cola: MD1Queue):
     """Presenta los resultados del sistema M/D/1."""
     print(f"Tasa de llegada (λ): {cola.tasa_llegada:.4f} clientes por unidad de tiempo")
-    print(f"Tasa de servicio (μ): {cola.tasa_servicio:.4f} clientes atendidos por unidad de tiempo")
+    print(
+        f"Tasa de servicio (μ): {cola.tasa_servicio:.4f} clientes atendidos por unidad de tiempo"
+    )
     print(f"Utilización del sistema (ρ): {cola.utilizacion:.4f}")
-    print(f"Número promedio de clientes en la cola (Lq): {cola.clientes_promedio_cola():.4f}")
-    print(f"Número promedio de clientes en el sistema (Ls): {cola.clientes_promedio_sistema():.4f}")
-    print(f"Tiempo promedio de espera en la cola (Wq): {cola.tiempo_espera_cola():.4f} unidades de tiempo")
-    print(f"Tiempo promedio de espera en el sistema (Ws): {cola.tiempo_espera_sistema():.4f} unidades de tiempo")
+    print(
+        f"Número promedio de clientes en la cola (Lq): {cola.clientes_promedio_cola():.4f}"
+    )
+    print(
+        f"Número promedio de clientes en el sistema (Ls): {cola.clientes_promedio_sistema():.4f}"
+    )
+    print(
+        f"Tiempo promedio de espera en la cola (Wq): {cola.tiempo_espera_cola():.4f} unidades de tiempo"
+    )
+    print(
+        f"Tiempo promedio de espera en el sistema (Ws): {cola.tiempo_espera_sistema():.4f} unidades de tiempo"
+    )
 
 
 # Ejemplo de uso
 if __name__ == "__main__":
     try:
         # Pedir al usuario los datos necesarios
-        llegadas_totales = float(input("Ingrese el número total de llegadas observadas: "))
+        llegadas_totales = float(
+            input("Ingrese el número total de llegadas observadas: ")
+        )
         tiempo_observacion = float(input("Ingrese el tiempo total de observación: "))
-        atendidos_totales = float(input("Ingrese el número total de clientes atendidos: "))
-        tiempo_servicio = float(input("Ingrese el tiempo total de servicio observado: "))
+        atendidos_totales = float(
+            input("Ingrese el número total de clientes atendidos: ")
+        )
+        tiempo_servicio = float(
+            input("Ingrese el tiempo total de servicio observado: ")
+        )
 
         # Crear una instancia del sistema M/D/1
-        cola_md_1 = MD1Queue(llegadas_totales, tiempo_observacion, atendidos_totales, tiempo_servicio)
+        cola_md_1 = MD1Queue(
+            llegadas_totales, tiempo_observacion, atendidos_totales, tiempo_servicio
+        )
 
         # Mostrar los resultados
         presentar_resultados(cola_md_1)
