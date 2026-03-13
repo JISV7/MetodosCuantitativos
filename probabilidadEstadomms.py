@@ -43,6 +43,8 @@ class MMSCola:
 
         # Calcular p0 una vez en la inicialización (evita redundancia)
         self.p_0 = self._calcular_p0()
+        # Probabilidad de que todos los servidores estén ocupados (P(N ≥ s))
+        self.p_ocupados = self._calcular_p_ocupados()
 
     def _factorial(self, n):
         """Calcula factorial usando math.lgamma para mayor robustez numérica."""
@@ -69,6 +71,14 @@ class MMSCola:
 
         return 1 / (sum1 + sum2)
 
+    def _calcular_p_ocupados(self):
+        """
+        Calcula la probabilidad de que todos los servidores estén ocupados (P(N ≥ s)).
+        También conocida como fórmula C de Erlang.
+        """
+        return (self.p_0 * (self.intensidad ** self.s) /
+                (self._factorial(self.s) * (1 - self.utilizacion)))
+
     def p0(self):
         """Retorna la probabilidad de que el sistema esté vacío (P0)."""
         return self.p_0
@@ -94,10 +104,69 @@ class MMSCola:
         else:
             return (rho ** n / (self._factorial(s) * (s ** (n - s)))) * self.p_0
 
+    def p_cola_mayor_n(self, n):
+        """
+        Probabilidad de que el número de clientes en la cola (esperando) sea mayor que n.
+        P(Cola > n) = P(N ≥ s) * ρ^(n+1)
+
+        Args:
+            n: Número de clientes a partir del cual se mide la cola (n ≥ 0)
+
+        Returns:
+            float: Probabilidad
+        """
+        if n < 0:
+            raise ValueError("n debe ser un entero no negativo.")
+        return self.p_ocupados * (self.utilizacion ** (n + 1))
+
+    def p_wq_mayor_t(self, t):
+        """
+        Probabilidad de que el tiempo de espera en cola sea mayor que t.
+        P(W_q > t) = P(N ≥ s) * e^(-s μ (1-ρ) t)
+
+        Args:
+            t: Tiempo (t ≥ 0)
+
+        Returns:
+            float: Probabilidad
+        """
+        if t < 0:
+            raise ValueError("t debe ser mayor o igual a 0.")
+        tasa = self.s * self.mu * (1 - self.utilizacion)
+        return self.p_ocupados * math.exp(-tasa * t)
+
+    def p_ws_mayor_t(self, t):
+        """
+        Probabilidad de que el tiempo total en el sistema (cola + servicio) sea mayor que t.
+        Para M/M/s se utiliza la fórmula derivada de la convolución.
+
+        Args:
+            t: Tiempo (t ≥ 0)
+
+        Returns:
+            float: Probabilidad
+        """
+        if t < 0:
+            raise ValueError("t debe ser mayor o igual a 0.")
+
+        rho = self.utilizacion
+        s = self.s
+        mu = self.mu
+        p_ocup = self.p_ocupados
+        factor = s * (1 - rho)  # s(1-ρ)
+
+        # Caso especial cuando s(1-ρ) = 1 (límite)
+        if abs(factor - 1.0) < 1e-12:
+            return math.exp(-mu * t) * (1 + p_ocup * mu * t)
+        else:
+            beta = mu * (factor - 1)  # μ (s(1-ρ)-1)
+            termino = (p_ocup / (factor - 1)) * (factor - math.exp(-beta * t))
+            return math.exp(-mu * t) * (1 - p_ocup + termino)
+
 
 def presentar_resultados(cola: MMSCola, n_max=100):
     """
-    Presenta las probabilidades de estado estable.
+    Presenta las probabilidades de estado estable y algunas métricas adicionales.
 
     Args:
         cola: Instancia de MMSCola
@@ -109,6 +178,7 @@ def presentar_resultados(cola: MMSCola, n_max=100):
     print(f"Intensidad de tráfico (u = λ/μ): {cola.intensidad:.4f}")
     print(f"Utilización del sistema (ρ = λ/(s*μ)): {cola.utilizacion:.4f}")
     print(f"Probabilidad de sistema vacío (P0): {cola.p0():.4f}")
+    print(f"Probabilidad de que todos los servidores estén ocupados (P(N≥s)): {cola.p_ocupados:.4f}")
     print(f"\nProbabilidades P(n) para n = 0 hasta {n_max}:")
     print("-" * 30)
     for n in range(n_max + 1):
@@ -128,10 +198,22 @@ if __name__ == "__main__":
         except ValueError:
             n_max = 100
 
-        # Crear instancia del sistema M/M/s (p0 se calcula dinámicamente)
+        # Crear instancia del sistema M/M/s
         cola = MMSCola(lmbda, mu, s)
 
-        # Mostrar resultados
+        # Mostrar resultados básicos
         presentar_resultados(cola, n_max)
+
+        # Solicitar valores para calcular probabilidades adicionales
+        print("\n--- Probabilidades adicionales ---")
+        n_cola = int(input("Ingrese n para P(Cola > n): "))
+        print(f"P(Cola > {n_cola}) = {cola.p_cola_mayor_n(n_cola):.6f}")
+
+        t_wq = float(input("Ingrese t para P(W_q > t): "))
+        print(f"P(W_q > {t_wq}) = {cola.p_wq_mayor_t(t_wq):.6f}")
+
+        t_ws = float(input("Ingrese t para P(W_s > t): "))
+        print(f"P(W_s > {t_ws}) = {cola.p_ws_mayor_t(t_ws):.6f}")
+
     except ValueError as e:
         print(f"Error: {e}")

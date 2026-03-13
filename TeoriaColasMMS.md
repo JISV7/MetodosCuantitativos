@@ -81,6 +81,9 @@ L_s = Σ_{n=0}^{∞} n * P_n
 L_s =  λ / (μ - λ)
 <!-- Solo para M/M/1 -->
 
+L_s =  ρ / (1 - ρ)
+<!-- Solo para M/M/1 -->
+
 - Número promedio de clientes en la cola "Ocupada" (L_b):
 
 L_b = L_q / P_w
@@ -103,3 +106,18 @@ W_q = λ / (μ * (μ - λ))
 W_b = W_q / P_w
 
 W_b = 1 / (s * μ - λ)
+
+## Probabilidades
+
+Probabilidad de que la cola (número de clientes esperando) sea mayor que n (P(Cola > n)):
+P(Cola > n) = ρ^(n + 1)
+<!-- Solo para M/M/1 -->
+<!-- "Cola > n" significa que hay al menos n+1 clientes en el sistema (cola más servicio) -->
+
+Probabilidad de esperar más de un tiempo t en la cola (P(W_q > t)):
+P(W_q > t) = ρ * e^(-μ * (1 - ρ) * t)
+<!-- Solo para M/M/1 -->
+
+Probabilidad de esperar más de un tiempo t en el sistema (P(W_s > t)):
+P(W_s > t) = e^(-μ * (1 - ρ) * t)
+<!-- Solo para M/M/1 -->
