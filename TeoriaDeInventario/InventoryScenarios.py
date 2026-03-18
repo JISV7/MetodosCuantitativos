@@ -132,6 +132,8 @@ class PriceBreakModel:
             candidates.append(lower_bound)
 
             for q in set(candidates):   # use set to avoid duplicate if eoq equals lower bound
+                if q == 0:
+                    continue  # skip zero quantity (not a valid order)
                 # Total cost = ordering + holding + purchase cost (since price affects holding and purchase)
                 # Note: purchase cost is D * price, constant for all q at same price, but we include it to compare across prices.
                 total_cost = (self.demand * price) + (self.demand * self.ordering_cost / q) + (h * q / 2)
@@ -140,10 +142,22 @@ class PriceBreakModel:
                     best_q = q
                     best_price = price
 
+        if best_q is None or best_price is None:
+            raise ValueError("Could not find a valid solution. Check input data.")
+        
+        # Calculate detailed cost components for the best solution
+        h_best = self.holding_cost_rate * best_price
+        purchase_cost = self.demand * best_price
+        ordering_cost_total = (self.demand / best_q) * self.ordering_cost
+        holding_cost_total = (best_q / 2) * h_best
+        
         return {
             "Optimal order quantity": best_q,
             "Unit price": best_price,
-            "Total annual cost (including purchase)": best_cost
+            "Annual purchase cost (D*C)": purchase_cost,
+            "Annual ordering cost (D/Q*S)": ordering_cost_total,
+            "Annual holding cost (Q/2*H)": holding_cost_total,
+            "Total annual cost": best_cost
         }
 
 class MultiItemConstraintModel:
