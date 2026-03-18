@@ -43,11 +43,18 @@ class EOQModel:
             raise ValueError("Data not provided. Call input_data() first.")
         # EOQ formula
         q = math.sqrt(2 * self.demand * self.ordering_cost / self.holding_cost)
-        total_cost = math.sqrt(2 * self.demand * self.ordering_cost * self.holding_cost)
         num_orders = self.demand / q
         cycle_time = 1 / num_orders  # in years
+        
+        # Cost components (professor's formulas)
+        ordering_cost_total = (self.demand / q) * self.ordering_cost  # D/Q * S
+        holding_cost_total = (q / 2) * self.holding_cost  # Q/2 * H
+        total_cost = ordering_cost_total + holding_cost_total
+        
         return {
             "EOQ": q,
+            "Total annual ordering cost (D/Q*S)": ordering_cost_total,
+            "Total annual holding cost (Q/2*H)": holding_cost_total,
             "Total annual cost": total_cost,
             "Number of orders per year": num_orders,
             "Cycle time (years)": cycle_time
