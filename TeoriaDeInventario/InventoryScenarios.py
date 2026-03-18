@@ -160,6 +160,116 @@ class PriceBreakModel:
             "Total annual cost": best_cost
         }
 
+class ProbabilisticModel:
+    """Scenario 4: Probabilistic demand with safety stock and reorder point.
+       Uses EOQ for order quantity and calculates reorder point with safety stock
+       based on desired service level.
+    """
+    def __init__(self):
+        self.demand_annual = None
+        self.demand_daily_avg = None
+        self.demand_daily_std = None
+        self.lead_time = None
+        self.service_level = None
+        self.ordering_cost = None
+        self.holding_cost_rate = None
+        self.unit_cost = None
+        self.working_days = None
+
+    def input_data(self):
+        print("\n--- Probabilistic Demand Model (with Safety Stock) ---")
+        print("\nDemand Information:")
+        self.demand_daily_avg = get_float("  Average daily demand (units/day): ")
+        self.demand_daily_std = get_float("  Std dev of daily demand (units/day): ")
+        self.working_days = get_int("  Working days per year: ")
+        self.demand_annual = self.demand_daily_avg * self.working_days
+        print(f"  Annual demand (calculated): {self.demand_annual:.2f} units/year")
+        
+        print("\nLead Time & Service Level:")
+        self.lead_time = get_float("  Lead time (days): ")
+        self.service_level = get_float("  Desired service level (as decimal, e.g., 0.95): ", min_val=0, allow_zero=False)
+        
+        print("\nCost Parameters:")
+        self.ordering_cost = get_float("  Ordering cost ($/order): ")
+        self.unit_cost = get_float("  Unit cost ($/unit): ")
+        self.holding_cost_rate = get_float("  Annual holding cost rate (as decimal, e.g., 0.2): ")
+
+    def solve(self):
+        if None in (self.demand_annual, self.demand_daily_avg, self.demand_daily_std,
+                    self.lead_time, self.service_level, self.ordering_cost, 
+                    self.holding_cost_rate, self.unit_cost):
+            raise ValueError("Data not provided.")
+        
+        # Calculate H (annual holding cost per unit)
+        H = self.holding_cost_rate * self.unit_cost
+        
+        # EOQ calculation
+        D = self.demand_annual
+        S = self.ordering_cost
+        eoq = math.sqrt(2 * D * S / H)
+        
+        # Number of orders per year
+        num_orders = D / eoq
+        
+        # Reorder point calculation
+        # Mean demand during lead time
+        mu_LT = self.demand_daily_avg * self.lead_time
+        
+        # Std dev of demand during lead time
+        sigma_LT = self.demand_daily_std * math.sqrt(self.lead_time)
+        
+        # Z value for service level (using inverse of standard normal CDF)
+        # Approximation using Abramowitz and Stegun
+        Z = self._get_z_score(self.service_level)
+        
+        # Safety stock
+        safety_stock = Z * sigma_LT
+        
+        # Reorder point
+        reorder_point = mu_LT + safety_stock
+        
+        # Cost components
+        purchase_cost = D * self.unit_cost
+        ordering_cost_total = (D / eoq) * S
+        holding_cost_cycle = (eoq / 2) * H  # Holding cost for cycle stock
+        holding_cost_safety = safety_stock * H  # Holding cost for safety stock
+        total_holding_cost = holding_cost_cycle + holding_cost_safety
+        total_cost = ordering_cost_total + total_holding_cost + purchase_cost
+        
+        return {
+            "Optimal order quantity (EOQ)": eoq,
+            "Number of orders per year": num_orders,
+            "Reorder point": reorder_point,
+            "Safety stock": safety_stock,
+            "Z-value (service level)": Z,
+            "Mean demand during lead time": mu_LT,
+            "Std dev during lead time": sigma_LT,
+            "Annual purchase cost (D*C)": purchase_cost,
+            "Annual ordering cost (D/Q*S)": ordering_cost_total,
+            "Annual holding cost (cycle stock)": holding_cost_cycle,
+            "Annual holding cost (safety stock)": holding_cost_safety,
+            "Total annual holding cost": total_holding_cost,
+            "Total annual cost": total_cost
+        }
+    
+    def _get_z_score(self, service_level):
+        """Approximate inverse of standard normal CDF using Abramowitz and Stegun."""
+        # For service_level >= 0.5
+        if service_level >= 0.5:
+            p = 1 - service_level
+        else:
+            p = service_level
+        
+        # Coefficients for rational approximation
+        c0, c1, c2 = 2.515517, 0.802853, 0.010328
+        d1, d2, d3 = 1.432788, 0.189269, 0.001308
+        
+        t = math.sqrt(-2 * math.log(p))
+        z = t - (c0 + c1*t + c2*t*t) / (1 + d1*t + d2*t*t + d3*t*t*t)
+        
+        return z if service_level >= 0.5 else -z
+
+
 class MultiItemConstraintModel:
     """Scenario 3: Multi‑item EOQ with a space constraint.
        Each item has demand, ordering cost, holding cost, and space per unit.
@@ -277,7 +387,8 @@ def main():
     models = {
         '1': EOQModel,
         '2': PriceBreakModel,
-        '3': MultiItemConstraintModel
+        '3': MultiItemConstraintModel,
+        '4': ProbabilisticModel
     }
     while True:
         print("\n" + "="*50)
@@ -285,13 +396,14 @@ def main():
         print("1. Single‑item EOQ")
         print("2. EOQ with price breaks (all‑units discounts)")
         print("3. Multi‑item EOQ with space constraint")
+        print("4. Probabilistic demand (with safety stock)")
         print("0. Exit")
         choice = input("Select an option: ").strip()
         if choice == '0':
             print("Goodbye!")
             break
         if choice not in models:
-            print("Invalid choice. Please enter 1, 2, 3, or 0.")
+            print("Invalid choice. Please enter 1, 2, 3, 4, or 0.")
             continue
 
         model_class = models[choice]
