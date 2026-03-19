@@ -1,3 +1,22 @@
+La teoría de inventarios es un área de estudio dentro de la investigación operativa que se enfoca en cómo gestionar eficazmente los inventarios de productos o bienes en una empresa. El objetivo principal es determinar cuándo y cuánto ordenar para satisfacer la demanda, minimizando los costos asociados.
+
+# Conceptos Básicos de la Teoría de Inventarios
+Inventario: Se refiere a los bienes o materiales que una empresa tiene almacenados para su uso o venta. Puede incluir materias primas, productos intermedios, productos terminados, repuestos, etc.
+
+Demanda (D): La cantidad de productos que los clientes solicitan. La demanda puede ser determinística (conocida y constante) o aleatoria (incertidumbre sobre la cantidad solicitada y su tiempo).
+
+Lead Time (LT): El tiempo que transcurre desde que se realiza una orden hasta que se recibe el inventario.
+
+Costo de mantenimiento (H): Los costos asociados con mantener productos en inventario, como costos de almacenamiento, deterioro, seguros, etc.
+
+Costo de pedido (S): Es el costo que incurre una empresa cada vez que realiza un pedido. Esto incluye costos de transporte, preparación, procesamiento, etc.
+
+Costo de escasez (B): Es el costo que se produce cuando no hay suficiente inventario para satisfacer la demanda, lo que puede generar pérdida de ventas o de clientes.
+
+Costo de adquisición (C): El precio de compra de los productos que se agregan al inventario.
+
+Punto de Reorden (R): Nivel crítico de inventario que indica el momento en que se debe realizar un nuevo pedido al proveedor. Asegurando que el nuevo lote llegue antes de que el stock actual se agote.
+
 # Modelos Deterministicos
 D = Demanda anual
 S = Costo de Pedido
@@ -15,8 +34,8 @@ C = Costo unitario de la compra
 La cantidad a pedir en cada ocasión
 Q = sqrt(2DS / H)
 
-Punto de Reorden (ROP)
-ROP=d×LT
+Punto de Reorden (R)
+R = d * LT
 
 d = D / numero de periodos
 

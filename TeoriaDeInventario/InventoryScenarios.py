@@ -411,6 +411,19 @@ def main():
         try:
             model.input_data()
             result = model.solve()
+
+            if choice == '1':
+                ans = input("\nDo you want to calculate the reorder point? (y/n): ").strip().lower()
+                if ans in ('y', 'yes'):
+                    # Get lead time and days per year from user
+                    lead_time = get_float("Enter lead time (days): ", min_val=0, allow_zero=False)
+                    days_per_year = get_float("Enter working days per year: ", min_val=1, allow_zero=False)
+                    # Use annual demand stored in the model
+                    annual_demand = model.demand
+                    daily_demand = annual_demand / days_per_year
+                    reorder_point = daily_demand * lead_time
+                    result["Reorder point (units)"] = reorder_point
+
             print("\n" + "-"*40)
             print("OPTIMAL SOLUTION")
             for key, value in result.items():
