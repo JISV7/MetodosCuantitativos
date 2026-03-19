@@ -383,12 +383,53 @@ class MultiItemConstraintModel:
             "Space target": self.total_space
         }
 
+class EOQWithSafetyStock:
+    """Scenario 5: EOQ with a fixed safety stock."""
+    def __init__(self):
+        self.demand = None
+        self.ordering_cost = None
+        self.holding_cost = None
+        self.safety_stock = None
+
+    def input_data(self):
+        print("\n--- EOQ with Fixed Safety Stock ---")
+        self.demand = get_float("Annual demand (units/year): ")
+        self.ordering_cost = get_float("Ordering cost ($/order): ")
+        self.holding_cost = get_float("Holding cost ($/unit/year): ")
+        self.safety_stock = get_float("Safety stock (units): ", min_val=0, allow_zero=True)
+
+    def solve(self):
+        if None in (self.demand, self.ordering_cost, self.holding_cost, self.safety_stock):
+            raise ValueError("Data not provided.")
+        # EOQ
+        q = math.sqrt(2 * self.demand * self.ordering_cost / self.holding_cost)
+        num_orders = self.demand / q
+        cycle_time = 1 / num_orders
+        ordering_cost_total = (self.demand / q) * self.ordering_cost
+        holding_cost_cycle = (q / 2) * self.holding_cost
+        holding_cost_safety = self.safety_stock * self.holding_cost
+        total_holding_cost = holding_cost_cycle + holding_cost_safety
+        total_cost = ordering_cost_total + total_holding_cost
+
+        return {
+            "EOQ": q,
+            "Safety stock": self.safety_stock,
+            "Total annual ordering cost": ordering_cost_total,
+            "Total annual holding cost (cycle stock)": holding_cost_cycle,
+            "Total annual holding cost (safety stock)": holding_cost_safety,
+            "Total annual holding cost": total_holding_cost,
+            "Total annual cost (ordering + holding)": total_cost,
+            "Number of orders per year": num_orders,
+            "Cycle time (years)": cycle_time
+        }
+
 def main():
     models = {
         '1': EOQModel,
         '2': PriceBreakModel,
         '3': MultiItemConstraintModel,
-        '4': ProbabilisticModel
+        '4': ProbabilisticModel,
+        '5': EOQWithSafetyStock   # New scenario
     }
     while True:
         print("\n" + "="*50)
@@ -397,13 +438,14 @@ def main():
         print("2. EOQ with price breaks (all‑units discounts)")
         print("3. Multi‑item EOQ with space constraint")
         print("4. Probabilistic demand (with safety stock)")
+        print("5. EOQ with fixed safety stock")   # New option
         print("0. Exit")
         choice = input("Select an option: ").strip()
         if choice == '0':
             print("Goodbye!")
             break
         if choice not in models:
-            print("Invalid choice. Please enter 1, 2, 3, 4, or 0.")
+            print("Invalid choice. Please enter 1, 2, 3, 4, 5, or 0.")
             continue
 
         model_class = models[choice]
@@ -412,17 +454,43 @@ def main():
             model.input_data()
             result = model.solve()
 
-            if choice == '1':
+            # For scenario 1 and 5, optionally calculate reorder point
+            if choice in ('1', '5'):
                 ans = input("\nDo you want to calculate the reorder point? (y/n): ").strip().lower()
                 if ans in ('y', 'yes'):
-                    # Get lead time and days per year from user
                     lead_time = get_float("Enter lead time (days): ", min_val=0, allow_zero=False)
                     days_per_year = get_float("Enter working days per year: ", min_val=1, allow_zero=False)
-                    # Use annual demand stored in the model
                     annual_demand = model.demand
                     daily_demand = annual_demand / days_per_year
                     reorder_point = daily_demand * lead_time
-                    result["Reorder point (units)"] = reorder_point
+                    # If safety stock exists (scenario 5), add it to reorder point
+                    if hasattr(model, 'safety_stock') and model.safety_stock is not None:
+                        reorder_point += model.safety_stock
+                        result["Reorder point (with safety stock)"] = reorder_point
+                    else:
+                        result["Reorder point (without safety stock)"] = reorder_point
+
+            # For scenario 1 only, also offer comparison with current policy
+            if choice == '1':
+                ans2 = input("\nDo you want to compare with current policy? (y/n): ").strip().lower()
+                if ans2 in ('y', 'yes'):
+                    current_q = get_float("Enter current order quantity (units): ", min_val=0, allow_zero=False)
+                    D = model.demand
+                    S = model.ordering_cost
+                    H = model.holding_cost
+                    current_ordering = (D / current_q) * S
+                    current_holding = (current_q / 2) * H
+                    current_total = current_ordering + current_holding
+                    optimal_total = result["Total annual cost"]
+                    savings = optimal_total - current_total
+                    result["Current order quantity"] = current_q
+                    result["Current total cost (ordering+holding)"] = current_total
+                    result["Optimal total cost"] = optimal_total
+                    result["Difference (Optimal - Current)"] = savings
+                    if savings < 0:
+                        result["Savings with optimal policy"] = -savings
+                    else:
+                        result["Note"] = "Current policy is already optimal or better."
 
             print("\n" + "-"*40)
             print("OPTIMAL SOLUTION")
