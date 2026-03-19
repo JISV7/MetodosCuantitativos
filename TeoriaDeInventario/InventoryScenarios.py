@@ -326,7 +326,7 @@ class MultiItemConstraintModel:
             d = get_float("  Annual demand: ")
             o = get_float("  Ordering cost per order: ")
             h = get_float("  Holding cost per unit per year: ")
-            s = get_float("  Space occupied per unit (e.g., sq ft): ")
+            s = get_float("  Space occupied per unit (e.g., mts2): ")
             self.items.append(
                 {"demand": d, "order_cost": o, "hold_cost": h, "space": s}
             )
@@ -500,7 +500,7 @@ class MultiItemConstraintBudgetModel:
             o = get_float("  Ordering cost per order ($): ")
             h = get_float("  Holding cost per unit per year ($): ")
             c = get_float("  Unit cost ($/unit): ")
-            s = get_float("  Space occupied per unit (e.g., sq ft): ")
+            s = get_float("  Space occupied per unit (e.g., mts2): ")
             dd = get_float("  Average daily demand (units/day): ")
             lt = get_float("  Lead time (days): ")
             self.items.append(
@@ -714,17 +714,25 @@ class MultiItemConstraintBudgetModel:
             "Space target": self.total_space,
             "Budget target": self.total_budget,
         }
-        # Item details
+        # Item details - store as nested dict for better formatting
+        item_details = []
         for idx, it in enumerate(self.items):
             q = Q[idx]
             rop = it["daily_demand"] * it["lead_time"]
-            result[f"Item {idx + 1} - Order quantity"] = q
-            result[f"Item {idx + 1} - Reorder point"] = rop
             # Optional: include cost components per item
             ord_cost = (it["demand"] / q) * it["order_cost"]
             hold_cost = (q / 2) * it["hold_cost"]
-            result[f"Item {idx + 1} - Annual ordering cost"] = ord_cost
-            result[f"Item {idx + 1} - Annual holding cost"] = hold_cost
+            budget_item = (q / 2) * it["unit_cost"]
+            space_item = (q / 2) * it["space"]
+            item_details.append({
+                "order_quantity": q,
+                "reorder_point": rop,
+                "annual_ordering_cost": ord_cost,
+                "annual_holding_cost": hold_cost,
+                "budget_used": budget_item,
+                "space_used": space_item,
+            })
+        result["item_details"] = item_details
         return result
 
 
@@ -820,7 +828,10 @@ def main():
 
             print("\n" + "-" * 40)
             print("OPTIMAL SOLUTION")
+            # Print summary totals first
             for key, value in result.items():
+                if key == "item_details":
+                    continue  # Skip item details for now
                 if isinstance(value, float):
                     print(f"{key}: {value:.4f}")
                 elif isinstance(value, list):
@@ -829,6 +840,18 @@ def main():
                         print(f"  Item {i + 1}: {v:.4f}")
                 else:
                     print(f"{key}: {value}")
+            
+            # Print individual item details
+            if "item_details" in result:
+                print("\nItem Details:")
+                for idx, item in enumerate(result["item_details"]):
+                    print(f"\n  Item {idx + 1}:")
+                    print(f"    Order quantity: {item['order_quantity']:.4f}")
+                    print(f"    Reorder point: {item['reorder_point']:.4f}")
+                    print(f"    Annual ordering cost: {item['annual_ordering_cost']:.4f}")
+                    print(f"    Annual holding cost: {item['annual_holding_cost']:.4f}")
+                    print(f"    Budget used (average inventory value): {item['budget_used']:.4f}")
+                    print(f"    Space used (average): {item['space_used']:.4f}")
             print("-" * 40)
         except Exception as e:
             print(f"\nError: {e}")
