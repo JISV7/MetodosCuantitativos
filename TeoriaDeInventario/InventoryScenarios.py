@@ -724,14 +724,16 @@ class MultiItemConstraintBudgetModel:
             hold_cost = (q / 2) * it["hold_cost"]
             budget_item = (q / 2) * it["unit_cost"]
             space_item = (q / 2) * it["space"]
-            item_details.append({
-                "order_quantity": q,
-                "reorder_point": rop,
-                "annual_ordering_cost": ord_cost,
-                "annual_holding_cost": hold_cost,
-                "budget_used": budget_item,
-                "space_used": space_item,
-            })
+            item_details.append(
+                {
+                    "order_quantity": q,
+                    "reorder_point": rop,
+                    "annual_ordering_cost": ord_cost,
+                    "annual_holding_cost": hold_cost,
+                    "budget_used": budget_item,
+                    "space_used": space_item,
+                }
+            )
         result["item_details"] = item_details
         return result
 
@@ -840,7 +842,7 @@ def main():
                         print(f"  Item {i + 1}: {v:.4f}")
                 else:
                     print(f"{key}: {value}")
-            
+
             # Print individual item details
             if "item_details" in result:
                 print("\nItem Details:")
@@ -848,9 +850,13 @@ def main():
                     print(f"\n  Item {idx + 1}:")
                     print(f"    Order quantity: {item['order_quantity']:.4f}")
                     print(f"    Reorder point: {item['reorder_point']:.4f}")
-                    print(f"    Annual ordering cost: {item['annual_ordering_cost']:.4f}")
+                    print(
+                        f"    Annual ordering cost: {item['annual_ordering_cost']:.4f}"
+                    )
                     print(f"    Annual holding cost: {item['annual_holding_cost']:.4f}")
-                    print(f"    Budget used (average inventory value): {item['budget_used']:.4f}")
+                    print(
+                        f"    Budget used (average inventory value): {item['budget_used']:.4f}"
+                    )
                     print(f"    Space used (average): {item['space_used']:.4f}")
             print("-" * 40)
         except Exception as e:
