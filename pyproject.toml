@@ -1,0 +1,15 @@
+[project]
+name = "codigos"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "google-genai>=1.73.1",
+    "numpy>=2.4.4",
+    "pulp>=3.3.0",
+    "python-dotenv>=1.2.2",
+    "ruff>=0.15.11",
+    "scipy>=1.17.1",
+    "simpy>=4.1.1",
+]
